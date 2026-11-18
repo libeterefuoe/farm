@@ -1,0 +1,24 @@
+{
+  "name": "batloung-farm-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Batloung Farm Distribution Management System — DIWA2110 Take-Home Test",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start:backend": "npm --prefix backend start",
+    "build:frontend": "npm --prefix frontend run build",
+    "preview:frontend": "npm --prefix frontend run preview"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

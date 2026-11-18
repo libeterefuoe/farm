@@ -1,0 +1,202 @@
+{
+  "info": {
+    "_postman_id": "b4a9b0e0-1111-4aaa-bbbb-2c3d4e5f6001",
+    "name": "Batloung Farm — DIWA2110",
+    "description": "Postman collection covering every endpoint of the Batloung Farm Distribution Management System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "Suppliers",
+      "item": [
+        { "name": "List suppliers",  "request": { "method": "GET", "url": "{{baseUrl}}/suppliers" } },
+        { "name": "Get by id",       "request": { "method": "GET", "url": "{{baseUrl}}/suppliers/1" } },
+        {
+          "name": "Create supplier",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"Test Supplier 2025\",\n  \"contact_person\": \"Test Person\",\n  \"phone\": \"+27 11 999 9999\",\n  \"province\": \"Gauteng\",\n  \"address\": \"1 Test Street, Johannesburg\"\n}"
+            },
+            "url": "{{baseUrl}}/suppliers"
+          }
+        },
+        {
+          "name": "Update supplier",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_name\": \"Gauteng Fresh Produce\",\n  \"contact_person\": \"Thabo Mokoena\",\n  \"phone\": \"+27 11 555 1111\",\n  \"province\": \"Gauteng\",\n  \"address\": \"12 Market Road, Johannesburg\"\n}"
+            },
+            "url": "{{baseUrl}}/suppliers/1"
+          }
+        },
+        { "name": "Delete supplier (expect 409)", "request": { "method": "DELETE", "url": "{{baseUrl}}/suppliers/1" } }
+      ]
+    },
+    {
+      "name": "Fruits",
+      "item": [
+        { "name": "List fruits", "request": { "method": "GET", "url": "{{baseUrl}}/fruits" } },
+        {
+          "name": "Create fruit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fruit_name\": \"Pineapples\",\n  \"description\": \"Sweet tropical pineapples\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": "{{baseUrl}}/fruits"
+          }
+        },
+        {
+          "name": "Update fruit",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fruit_name\": \"Apples\",\n  \"description\": \"Crisp fresh apples\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": "{{baseUrl}}/fruits/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stock",
+      "item": [
+        { "name": "List stock", "request": { "method": "GET", "url": "{{baseUrl}}/stock" } },
+        { "name": "Low stock",  "request": { "method": "GET", "url": "{{baseUrl}}/stock/low" } }
+      ]
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        { "name": "List vendors",        "request": { "method": "GET", "url": "{{baseUrl}}/vendors" } },
+        { "name": "Search by name",      "request": { "method": "GET", "url": "{{baseUrl}}/vendors?search=Thabo" } },
+        { "name": "Search by phone",     "request": { "method": "GET", "url": "{{baseUrl}}/vendors?search=5800" } },
+        {
+          "name": "Create vendor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_name\": \"Test Vendor 2025\",\n  \"phone_number\": \"+266 5800 9999\",\n  \"location\": \"Maseru Test\",\n  \"registration_date\": \"2025-06-20\"\n}"
+            },
+            "url": "{{baseUrl}}/vendors"
+          }
+        },
+        {
+          "name": "Update vendor",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_name\": \"Maseru Central Market\",\n  \"phone_number\": \"+266 5800 0001\",\n  \"location\": \"Maseru Central\",\n  \"registration_date\": \"2025-01-10\"\n}"
+            },
+            "url": "{{baseUrl}}/vendors/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchases",
+      "item": [
+        { "name": "List purchases", "request": { "method": "GET", "url": "{{baseUrl}}/purchases" } },
+        { "name": "Get purchase",   "request": { "method": "GET", "url": "{{baseUrl}}/purchases/1" } },
+        {
+          "name": "Create purchase",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplier_id\": 1,\n  \"items\": [\n    { \"fruit_id\": 1, \"packaging_size\": \"SMALL\",  \"quantity\": 5, \"unit_cost\": 15.00 },\n    { \"fruit_id\": 2, \"packaging_size\": \"MEDIUM\", \"quantity\": 4, \"unit_cost\": 30.00 }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/purchases"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "item": [
+        { "name": "List sales", "request": { "method": "GET", "url": "{{baseUrl}}/sales" } },
+        { "name": "Get sale",   "request": { "method": "GET", "url": "{{baseUrl}}/sales/1" } },
+        {
+          "name": "Create sale — success",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_id\": 1,\n  \"payment_method\": \"CASH\",\n  \"amount_paid\": 90,\n  \"items\": [\n    { \"fruit_id\": 1, \"packaging_size\": \"MEDIUM\", \"quantity\": 2 }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/sales"
+          }
+        },
+        {
+          "name": "Create sale — FAIL (insufficient stock)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor_id\": 1,\n  \"payment_method\": \"CASH\",\n  \"amount_paid\": 0,\n  \"items\": [\n    { \"fruit_id\": 1, \"packaging_size\": \"LARGE\",  \"quantity\": 10 },\n    { \"fruit_id\": 2, \"packaging_size\": \"SMALL\",  \"quantity\": 1 }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/sales"
+          }
+        },
+        {
+          "name": "Add payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_method\": \"MOBILE_MONEY\",\n  \"amount\": 100\n}"
+            },
+            "url": "{{baseUrl}}/sales/2/payments"
+          }
+        },
+        {
+          "name": "Overpay (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_method\": \"CASH\",\n  \"amount\": 9999\n}"
+            },
+            "url": "{{baseUrl}}/sales/1/payments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        { "name": "Top fruits",            "request": { "method": "GET", "url": "{{baseUrl}}/reports/top-fruits" } },
+        { "name": "Revenue (June 2025)",   "request": { "method": "GET", "url": "{{baseUrl}}/reports/revenue?from=2025-06-01&to=2025-06-30" } },
+        { "name": "Top vendor",            "request": { "method": "GET", "url": "{{baseUrl}}/reports/top-vendor" } },
+        { "name": "Stock levels",          "request": { "method": "GET", "url": "{{baseUrl}}/reports/stock-levels" } },
+        { "name": "Outstanding balances",  "request": { "method": "GET", "url": "{{baseUrl}}/reports/outstanding-balances" } }
+      ]
+    }
+  ]
+}

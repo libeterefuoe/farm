@@ -1,0 +1,16 @@
+Paste the URL of your recorded demonstration video here.
+
+Example:
+https://drive.google.com/file/d/XXXXXXXX/view
+
+The video must demonstrate:
+  1. Dashboard overview
+  2. Supplier CRUD (including the 409 delete-blocked case)
+  3. Fruit CRUD
+  4. Stock page (per-size rows + low-stock highlight)
+  5. Vendor search and outstanding balance
+  6. Recording a multi-item purchase (stock increases)
+  7. Recording a multi-item sale (stock decreases, status derived)
+  8. FAILED sale: request 10 apples LARGE with only 6 available → 400 + full rollback
+  9. Recording an additional payment on an UNPAID sale → status flips to PAID
+ 10. All 5 reports render + revenue date range

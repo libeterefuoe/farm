@@ -1,0 +1,211 @@
+### ============================================================
+### Batloung Farm — REST Client request file
+### Works with the VS Code "REST Client" extension.
+### Change the variable below if your backend runs elsewhere.
+### ============================================================
+
+@baseUrl = http://localhost:5000/api
+
+### ------------------------------------------------------------
+### Health
+### ------------------------------------------------------------
+GET {{baseUrl}}/health
+
+### ------------------------------------------------------------
+### Suppliers
+### ------------------------------------------------------------
+GET {{baseUrl}}/suppliers
+
+###
+GET {{baseUrl}}/suppliers/1
+
+###
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "business_name": "Test Supplier 2025",
+  "contact_person": "Test Person",
+  "phone": "+27 11 999 9999",
+  "province": "Gauteng",
+  "address": "1 Test Street, Johannesburg"
+}
+
+###
+PUT {{baseUrl}}/suppliers/1
+Content-Type: application/json
+
+{
+  "business_name": "Gauteng Fresh Produce",
+  "contact_person": "Thabo Mokoena",
+  "phone": "+27 11 555 1111",
+  "province": "Gauteng",
+  "address": "12 Market Road, Johannesburg"
+}
+
+###
+# DELETE will fail (409) for any supplier with purchases
+DELETE {{baseUrl}}/suppliers/1
+
+### ------------------------------------------------------------
+### Fruits
+### ------------------------------------------------------------
+GET {{baseUrl}}/fruits
+
+###
+POST {{baseUrl}}/fruits
+Content-Type: application/json
+
+{
+  "fruit_name": "Pineapples",
+  "description": "Sweet tropical pineapples",
+  "status": "ACTIVE"
+}
+
+###
+PUT {{baseUrl}}/fruits/1
+Content-Type: application/json
+
+{
+  "fruit_name": "Apples",
+  "description": "Crisp fresh apples",
+  "status": "ACTIVE"
+}
+
+### ------------------------------------------------------------
+### Stock
+### ------------------------------------------------------------
+GET {{baseUrl}}/stock
+
+###
+GET {{baseUrl}}/stock/low
+
+### ------------------------------------------------------------
+### Vendors
+### ------------------------------------------------------------
+GET {{baseUrl}}/vendors
+
+###
+GET {{baseUrl}}/vendors?search=Thabo
+
+###
+GET {{baseUrl}}/vendors?search=5800
+
+###
+POST {{baseUrl}}/vendors
+Content-Type: application/json
+
+{
+  "vendor_name": "Test Vendor 2025",
+  "phone_number": "+266 5800 9999",
+  "location": "Maseru Test",
+  "registration_date": "2025-06-20"
+}
+
+###
+PUT {{baseUrl}}/vendors/1
+Content-Type: application/json
+
+{
+  "vendor_name": "Maseru Central Market",
+  "phone_number": "+266 5800 0001",
+  "location": "Maseru Central",
+  "registration_date": "2025-01-10"
+}
+
+### ------------------------------------------------------------
+### Purchases
+### ------------------------------------------------------------
+GET {{baseUrl}}/purchases
+
+###
+GET {{baseUrl}}/purchases/1
+
+###
+POST {{baseUrl}}/purchases
+Content-Type: application/json
+
+{
+  "supplier_id": 1,
+  "items": [
+    { "fruit_id": 1, "packaging_size": "SMALL",  "quantity": 5, "unit_cost": 15.00 },
+    { "fruit_id": 2, "packaging_size": "MEDIUM", "quantity": 4, "unit_cost": 30.00 }
+  ]
+}
+
+### ------------------------------------------------------------
+### Sales — SUCCESS
+### ------------------------------------------------------------
+GET {{baseUrl}}/sales
+
+###
+GET {{baseUrl}}/sales/1
+
+###
+POST {{baseUrl}}/sales
+Content-Type: application/json
+
+{
+  "vendor_id": 1,
+  "payment_method": "CASH",
+  "amount_paid": 90,
+  "items": [
+    { "fruit_id": 1, "packaging_size": "MEDIUM", "quantity": 2 }
+  ]
+}
+
+### ------------------------------------------------------------
+### Sales — FAILURE (insufficient stock → full rollback)
+### Request 999 LARGE bananas (only a few are in stock)
+### ------------------------------------------------------------
+POST {{baseUrl}}/sales
+Content-Type: application/json
+
+{
+  "vendor_id": 1,
+  "payment_method": "CASH",
+  "amount_paid": 0,
+  "items": [
+    { "fruit_id": 1, "packaging_size": "LARGE", "quantity": 10 },
+    { "fruit_id": 2, "packaging_size": "SMALL", "quantity": 1 }
+  ]
+}
+
+### ------------------------------------------------------------
+### Sales — ADDITIONAL PAYMENT
+### ------------------------------------------------------------
+POST {{baseUrl}}/sales/2/payments
+Content-Type: application/json
+
+{
+  "payment_method": "MOBILE_MONEY",
+  "amount": 100
+}
+
+### ------------------------------------------------------------
+### Sales — OVERPAYMENT (400)
+### ------------------------------------------------------------
+POST {{baseUrl}}/sales/1/payments
+Content-Type: application/json
+
+{
+  "payment_method": "CASH",
+  "amount": 9999
+}
+
+### ------------------------------------------------------------
+### Reports
+### ------------------------------------------------------------
+GET {{baseUrl}}/reports/top-fruits
+
+###
+GET {{baseUrl}}/reports/revenue?from=2025-06-01&to=2025-06-30
+
+###
+GET {{baseUrl}}/reports/top-vendor
+
+###
+GET {{baseUrl}}/reports/stock-levels
+
+###
+GET {{baseUrl}}/reports/outstanding-balances
