@@ -11,6 +11,9 @@ const {
   isValidPackagingSize, isValidPaymentMethod
 } = require('../middleware/validate');
 
+// ---------------------------------------------------------------
+// GET /api/sales
+// ---------------------------------------------------------------
 async function list(req, res, next) {
   try {
     const sales = await salesModel.findAll();
@@ -18,6 +21,9 @@ async function list(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// ---------------------------------------------------------------
+// GET /api/sales/:id
+// ---------------------------------------------------------------
 async function getById(req, res, next) {
   try {
     const sale = await salesModel.findById(req.params.id);
@@ -26,12 +32,15 @@ async function getById(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// ---------------------------------------------------------------
 // POST /api/sales
 // Body: { vendor_id, payment_method, amount_paid, items:[{fruit_id, packaging_size, quantity}] }
+// ---------------------------------------------------------------
 async function create(req, res, next) {
   try {
     const { vendor_id, payment_method, amount_paid, items } = req.body || {};
 
+    // --- Basic validation (same as before) ---
     if (!isPositiveInt(vendor_id)) return badRequest(res, 'vendor_id must be a positive integer.');
     const vendor = await vendorModel.findById(vendor_id);
     if (!vendor) return notFound(res, 'Vendor not found.');
@@ -51,6 +60,7 @@ async function create(req, res, next) {
       if (!isValidPackagingSize(it.packaging_size)) return badRequest(res, `items[${i}].packaging_size must be SMALL, MEDIUM or LARGE.`);
       if (!isPositiveInt(it.quantity)) return badRequest(res, `items[${i}].quantity must be a positive integer.`);
 
+      // Fail early if the fruit doesn't exist at all (faster feedback)
       const fruit = await fruitModel.findById(it.fruit_id);
       if (!fruit) return notFound(res, `Fruit ${it.fruit_id} not found.`);
     }
@@ -62,15 +72,24 @@ async function create(req, res, next) {
     // 4) Decrease stock
     // 5) COMMIT (or ROLLBACK on any failure)
     const result = await runTransaction(async (conn) => {
-      // Fetch stock + price for each line (FOR UPDATE prevents races)
       const resolved = [];
+
       for (const it of items) {
         const row = await stockModel.findByFruitAndSizeForUpdate(conn, it.fruit_id, it.packaging_size);
+
+        // CHANGED: clearer message when the stock row itself is missing.
+        // This is usually a data problem (seed not run) or a fruit/size
+        // combination that has never been stocked — not a code bug.
         if (!row) {
-          const err = new Error(`Stock row not found for fruit ${it.fruit_id} / ${it.packaging_size}`);
+          const fruit = await fruitModel.findById(it.fruit_id);
+          const err = new Error(
+            `No stock record for ${fruit.fruit_name} (${it.packaging_size}). ` +
+            `Please record a purchase for this fruit and size before selling it.`
+          );
           err.status = 400;
           throw err;
         }
+
         if (row.available_quantity < it.quantity) {
           const fruit = await fruitModel.findById(it.fruit_id);
           const err = new Error(
@@ -80,6 +99,7 @@ async function create(req, res, next) {
           err.status = 400;
           throw err;
         }
+
         resolved.push({
           fruit_id: it.fruit_id,
           packaging_size: it.packaging_size,
@@ -127,7 +147,8 @@ async function create(req, res, next) {
     const created = await salesModel.findById(result);
     res.status(201).json({ success: true, data: created });
   } catch (err) {
-    // If the transaction threw a 400 (validation-style), report it cleanly.
+    // CHANGED: any error with a status set (400 or 409) is a business
+    // validation error and should be reported to the client with that status.
     if (err.status === 400) return badRequest(res, err.message);
     if (err.status === 409) {
       return res.status(409).json({ success: false, message: err.message });
@@ -136,8 +157,10 @@ async function create(req, res, next) {
   }
 }
 
+// ---------------------------------------------------------------
 // POST /api/sales/:id/payments
 // Body: { payment_method, amount }
+// ---------------------------------------------------------------
 async function addPayment(req, res, next) {
   try {
     const { payment_method, amount } = req.body || {};

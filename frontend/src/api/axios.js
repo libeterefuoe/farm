@@ -1,42 +1,53 @@
 import axios from 'axios';
 
-// Central Axios instance.
-// baseURL comes from Vite env variable VITE_API_URL (loaded from .env).
+const TOKEN_KEY = 'batloung_token';
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: { 'Content-Type': 'application/json' },
-  // Render may need time to wake a sleeping service on the first request.
   timeout: 60000
 });
 
-// Response interceptor: convert every API error into a plain string
-// so pages can just do `setError(err.message)` without parsing.
+// Attach Bearer token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor: retry safe GETs once, then convert errors.
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Retry safe reads once when the connection drops or times out.
-    // Do not retry writes because their outcome may be unknown to the client.
-    const config = error.config;
-    const isGetRequest = config?.method?.toLowerCase() === 'get';
-    const retryCount = config?._retryCount || 0;
+    const config = error.config || {};
+    const isGetRequest = config.method?.toLowerCase() === 'get';
+    const retryCount = config._retryCount || 0;
 
+    // Retry safe reads once on network failure (Render cold starts)
     if (!error.response && isGetRequest && retryCount < 1) {
       config._retryCount = retryCount + 1;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
       return api.request(config);
     }
 
-    let message = 'Unexpected error. Please try again.';
+    // Auto-logout on 401 (except on the login endpoint itself)
+    if (error.response?.status === 401 && !config.url?.includes('/auth/login')) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem('batloung_user');
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.assign('/login');
+      }
+    }
 
+    let message = 'Unexpected error. Please try again.';
     if (error.response) {
       const data = error.response.data;
-      if (data && typeof data === 'object' && data.message) {
-        message = data.message;
-      } else if (typeof data === 'string' && data.length > 0) {
-        message = data;
-      } else {
-        message = `Request failed (${error.response.status})`;
-      }
+      if (data && typeof data === 'object' && data.message) message = data.message;
+      else if (typeof data === 'string' && data.length > 0) message = data;
+      else message = `Request failed (${error.response.status})`;
     } else if (error.request) {
       message = 'Cannot reach the API. Is the backend running?';
     } else if (error.message) {
