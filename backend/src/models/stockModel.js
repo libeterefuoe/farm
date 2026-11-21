@@ -46,13 +46,76 @@ async function findByFruitAndSizeForUpdate(conn, fruitId, packagingSize) {
   return rows[0] || null;
 }
 
-// Increase stock. Assumes the row exists (schema+seed guarantee it).
-async function increaseStock(conn, fruitId, packagingSize, qty) {
+async function getHistoricalQuantity(conn, fruitId, packagingSize) {
+  const [rows] = await conn.execute(
+    `SELECT
+       COALESCE((
+         SELECT SUM(quantity) FROM purchase_details
+         WHERE fruit_id = ? AND packaging_size = ?
+       ), 0) - COALESCE((
+         SELECT SUM(quantity) FROM sales_details
+         WHERE fruit_id = ? AND packaging_size = ?
+       ), 0) AS available_quantity`,
+    [fruitId, packagingSize, fruitId, packagingSize]
+  );
+  return Number(rows[0].available_quantity);
+}
+
+async function initializeFromHistory(conn, fruitId, packagingSize, sellingPrice) {
+  const existing = await findByFruitAndSizeForUpdate(conn, fruitId, packagingSize);
+  if (existing) {
+    const err = new Error(`Stock already exists for fruit ${fruitId} (${packagingSize}).`);
+    err.status = 409;
+    throw err;
+  }
+
+  const quantity = await getHistoricalQuantity(conn, fruitId, packagingSize);
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    const err = new Error(`No unstocked purchase quantity exists for fruit ${fruitId} (${packagingSize}).`);
+    err.status = 400;
+    throw err;
+  }
+
   await conn.execute(
+    `INSERT INTO stock (fruit_id, packaging_size, available_quantity, selling_price)
+     VALUES (?, ?, ?, ?)`,
+    [fruitId, packagingSize, quantity, sellingPrice]
+  );
+  return quantity;
+}
+
+// Increase existing stock, or create its first row with a selling price.
+async function increaseStock(conn, fruitId, packagingSize, qty, sellingPrice) {
+  const [result] = await conn.execute(
     `UPDATE stock
      SET available_quantity = available_quantity + ?
      WHERE fruit_id = ? AND packaging_size = ?`,
     [qty, fruitId, packagingSize]
+  );
+  if (result.affectedRows > 0) return;
+
+  if (sellingPrice === undefined) {
+    const err = new Error(
+      `A selling_price is required to stock fruit ${fruitId} (${packagingSize}) for the first time.`
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const initialQuantity = await getHistoricalQuantity(conn, fruitId, packagingSize);
+  if (!Number.isInteger(initialQuantity) || initialQuantity < qty) {
+    const err = new Error(
+      `Cannot initialize stock for fruit ${fruitId} (${packagingSize}) because purchase and sale history is inconsistent.`
+    );
+    err.status = 409;
+    throw err;
+  }
+
+  await conn.execute(
+    `INSERT INTO stock (fruit_id, packaging_size, available_quantity, selling_price)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE available_quantity = available_quantity + ?`,
+    [fruitId, packagingSize, initialQuantity, sellingPrice, qty]
   );
 }
 
@@ -73,6 +136,7 @@ module.exports = {
   findLowStock,
   findByFruitAndSize,
   findByFruitAndSizeForUpdate,
+  initializeFromHistory,
   increaseStock,
   decreaseStock
 };

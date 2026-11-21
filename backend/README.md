@@ -86,18 +86,22 @@ GET /api/health   → { success: true, message: "API up, DB reachable" }
 | Method | Path             | Body |
 |--------|------------------|------|
 | GET    | /api/purchases   | — |
+| GET    | /api/purchases/unstocked-history | — |
 | GET    | /api/purchases/:id | — |
 | POST   | /api/purchases   | see example below |
+| POST   | /api/purchases/reconcile-stock | `{ fruit_id, packaging_size, selling_price }` |
 
 ```json
 {
   "supplier_id": 1,
   "items": [
-    { "fruit_id": 1, "packaging_size": "SMALL", "quantity": 10, "unit_cost": 15.00 },
+    { "fruit_id": 1, "packaging_size": "SMALL", "quantity": 10, "unit_cost": 15.00, "selling_price": 25.00 },
     { "fruit_id": 2, "packaging_size": "MEDIUM", "quantity": 15, "unit_cost": 30.00 }
   ]
 }
 ```
+
+Include `selling_price` when purchasing a fruit and packaging size that has never been stocked before. It initializes that stock row's selling price and reconciles its quantity from purchase history minus sales; later purchases preserve the existing price.
 
 ### Sales
 | Method | Path                     | Body |

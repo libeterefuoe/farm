@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+
 // Simple coloured alert bar.
 // type: 'success' | 'error' | 'info'
 export default function Alert({ type = 'info', message, onClose }) {
@@ -7,7 +9,7 @@ export default function Alert({ type = 'info', message, onClose }) {
       <span>{message}</span>
       {onClose && (
         <button type="button" className="alert-close" onClick={onClose} aria-label="Dismiss">
-          ×
+          <X size={16} />
         </button>
       )}
     </div>

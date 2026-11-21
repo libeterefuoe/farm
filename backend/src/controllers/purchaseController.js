@@ -16,11 +16,44 @@ async function list(req, res, next) {
   } catch (err) { next(err); }
 }
 
+async function listUnstockedHistory(req, res, next) {
+  try {
+    const items = await purchaseModel.findUnstockedHistory();
+    res.json({ success: true, data: items });
+  } catch (err) { next(err); }
+}
+
 async function getById(req, res, next) {
   try {
     const purchase = await purchaseModel.findById(req.params.id);
     if (!purchase) return notFound(res, 'Purchase not found');
     res.json({ success: true, data: purchase });
+  } catch (err) { next(err); }
+}
+
+async function reconcileStock(req, res, next) {
+  try {
+    const { fruit_id, packaging_size, selling_price } = req.body || {};
+    if (!isPositiveInt(fruit_id)) {
+      return badRequest(res, 'fruit_id must be a positive integer.');
+    }
+    if (!isValidPackagingSize(packaging_size)) {
+      return badRequest(res, 'packaging_size must be SMALL, MEDIUM or LARGE.');
+    }
+    if (!isPositiveNumber(selling_price)) {
+      return badRequest(res, 'selling_price must be a positive number.');
+    }
+
+    const fruit = await fruitModel.findById(fruit_id);
+    if (!fruit) return notFound(res, 'Fruit not found.');
+
+    const quantity = await runTransaction((conn) =>
+      stockModel.initializeFromHistory(conn, fruit_id, packaging_size, selling_price)
+    );
+    res.status(201).json({
+      success: true,
+      data: { fruit_id, fruit_name: fruit.fruit_name, packaging_size, available_quantity: quantity, selling_price }
+    });
   } catch (err) { next(err); }
 }
 
@@ -44,6 +77,9 @@ async function create(req, res, next) {
       if (!isValidPackagingSize(it.packaging_size)) return badRequest(res, `items[${i}].packaging_size must be SMALL, MEDIUM or LARGE.`);
       if (!isPositiveInt(it.quantity)) return badRequest(res, `items[${i}].quantity must be a positive integer.`);
       if (!isPositiveNumber(it.unit_cost)) return badRequest(res, `items[${i}].unit_cost must be a positive number.`);
+      if (it.selling_price !== undefined && !isPositiveNumber(it.selling_price)) {
+        return badRequest(res, `items[${i}].selling_price must be a positive number.`);
+      }
 
       const fruit = await fruitModel.findById(it.fruit_id);
       if (!fruit) return notFound(res, `Fruit ${it.fruit_id} not found.`);
@@ -63,8 +99,10 @@ async function create(req, res, next) {
         await purchaseModel.createDetail(
           conn, id, it.fruit_id, it.quantity, it.unit_cost, it.packaging_size
         );
-        // Increase stock for the right (fruit, packaging_size) row
-        await stockModel.increaseStock(conn, it.fruit_id, it.packaging_size, it.quantity);
+        // A missing stock row is initialized with its first selling price.
+        await stockModel.increaseStock(
+          conn, it.fruit_id, it.packaging_size, it.quantity, it.selling_price
+        );
       }
       return id;
     });
@@ -74,4 +112,4 @@ async function create(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { list, getById, create };
+module.exports = { list, listUnstockedHistory, getById, reconcileStock, create };

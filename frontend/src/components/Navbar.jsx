@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
+import { Sprout } from 'lucide-react';
 
 // Top navigation. Active link gets the "active" class from styles.css.
 const links = [
-  { to: '/',              label: 'Dashboard' },
+  { to: '/dashboard',     label: 'Dashboard' },
   { to: '/suppliers',     label: 'Suppliers' },
   { to: '/fruits',        label: 'Fruits' },
   { to: '/stock',         label: 'Stock' },
   { to: '/vendors',       label: 'Vendors' },
+  { to: '/purchases',     label: 'Purchases' },
   { to: '/purchases/new', label: 'New Purchase' },
   { to: '/sales/new',     label: 'New Sale' },
   { to: '/sales',         label: 'Sales' },
@@ -17,7 +19,7 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-brand">
-        <span className="navbar-logo"></span>
+        <span className="navbar-logo"><Sprout size={19} /></span>
         <span>Batloung Farm</span>
       </div>
       <nav className="navbar-links">
@@ -25,7 +27,7 @@ export default function Navbar() {
           <NavLink
             key={l.to}
             to={l.to}
-            end={l.to === '/'}
+            end
             className={({ isActive }) => (isActive ? 'active' : '')}
           >
             {l.label}

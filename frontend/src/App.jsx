@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import NewPurchase from './pages/NewPurchase';
 import NewSale from './pages/NewSale';
 import NotFound from './pages/NotFound';
+import Purchases from './pages/Purchases';
 import Reports from './pages/Reports';
 import SalesList from './pages/SalesList';
 import Stock from './pages/Stock';
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/fruits" element={<Fruits />} />
             <Route path="/stock" element={<Stock />} />
             <Route path="/vendors" element={<Vendors />} />
+            <Route path="/purchases" element={<Purchases />} />
             <Route path="/purchases/new" element={<NewPurchase />} />
             <Route path="/sales/new" element={<NewSale />} />
             <Route path="/sales" element={<SalesList />} />

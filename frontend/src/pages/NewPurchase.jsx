@@ -8,12 +8,14 @@ const blankItem = () => ({
   fruit_id: '',
   packaging_size: 'SMALL',
   quantity: 1,
-  unit_cost: 0
+  unit_cost: 0,
+  selling_price: ''
 });
 
 export default function NewPurchase() {
   const [suppliers, setSuppliers] = useState([]);
   const [fruits, setFruits]       = useState([]);
+  const [stockRows, setStockRows] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState('');
@@ -26,12 +28,14 @@ export default function NewPurchase() {
     (async () => {
       try {
         setLoading(true);
-        const [sup, fr] = await Promise.all([
+        const [sup, fr, stock] = await Promise.all([
           api.get('/suppliers'),
-          api.get('/fruits')
+          api.get('/fruits'),
+          api.get('/stock')
         ]);
         setSuppliers(sup.data.data || []);
         setFruits(fr.data.data || []);
+        setStockRows(stock.data.data || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -41,7 +45,14 @@ export default function NewPurchase() {
   }, []);
 
   function updateItem(index, field, value) {
-    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, [field]: value } : it)));
+    setItems((prev) => prev.map((it, i) => {
+      if (i !== index) return it;
+      return {
+        ...it,
+        [field]: value,
+        ...(['fruit_id', 'packaging_size'].includes(field) && { selling_price: '' })
+      };
+    }));
   }
 
   function addItem() { setItems((prev) => [...prev, blankItem()]); }
@@ -52,6 +63,7 @@ export default function NewPurchase() {
     (sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unit_cost) || 0),
     0
   );
+  const stockKeys = new Set(stockRows.map((row) => `${row.fruit_id}:${row.packaging_size}`));
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -62,16 +74,33 @@ export default function NewPurchase() {
 
       const payload = {
         supplier_id: Number(supplierId),
-        items: items.map((it) => ({
-          fruit_id: Number(it.fruit_id),
-          packaging_size: it.packaging_size,
-          quantity: Number(it.quantity),
-          unit_cost: Number(it.unit_cost)
-        }))
+        items: items.map((it, index) => {
+          const key = `${it.fruit_id}:${it.packaging_size}`;
+          const alreadyStocked = stockKeys.has(key) || items.slice(0, index).some(
+            (previous) => `${previous.fruit_id}:${previous.packaging_size}` === key
+          );
+          return {
+            fruit_id: Number(it.fruit_id),
+            packaging_size: it.packaging_size,
+            quantity: Number(it.quantity),
+            unit_cost: Number(it.unit_cost),
+            ...(!alreadyStocked && { selling_price: Number(it.selling_price) })
+          };
+        })
       };
 
       const res = await api.post('/purchases', payload);
       setSuccess(`Purchase #${res.data.data.purchase_id} recorded. Total: M ${Number(res.data.data.total_amount).toFixed(2)}`);
+      setStockRows((previous) => [
+        ...previous,
+        ...payload.items
+          .filter((item) => item.selling_price !== undefined)
+          .map(({ fruit_id, packaging_size, selling_price }) => ({
+            fruit_id,
+            packaging_size,
+            selling_price
+          }))
+      ]);
       setSupplierId('');
       setItems([blankItem()]);
     } catch (err) {
@@ -81,7 +110,7 @@ export default function NewPurchase() {
     }
   }
 
-  if (loading) return <Loader text="Loading suppliers and fruits…" />;
+  if (loading) return <Loader text="Loading suppliers, fruits and stock…" />;
 
   return (
     <div>
@@ -104,39 +133,52 @@ export default function NewPurchase() {
 
         <h2 className="card-title">Items</h2>
 
-        {items.map((it, i) => (
-          <div key={i} className="item-row">
-            <label>
-              Fruit
-              <select value={it.fruit_id} onChange={(e) => updateItem(i, 'fruit_id', e.target.value)} required>
-                <option value="">— Choose fruit —</option>
-                {fruits.map((f) => (
-                  <option key={f.fruit_id} value={f.fruit_id}>{f.fruit_name}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Size
-              <select value={it.packaging_size} onChange={(e) => updateItem(i, 'packaging_size', e.target.value)}>
-                {PACKAGING_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </label>
-            <label>
-              Quantity
-              <input type="number" min="1" value={it.quantity}
-                     onChange={(e) => updateItem(i, 'quantity', e.target.value)} required />
-            </label>
-            <label>
-              Unit cost
-              <input type="number" min="0.01" step="0.01" value={it.unit_cost}
-                     onChange={(e) => updateItem(i, 'unit_cost', e.target.value)} required />
-            </label>
-            <button type="button" className="btn btn-sm btn-danger"
-                    onClick={() => removeItem(i)} disabled={items.length === 1}>
-              Remove
-            </button>
-          </div>
-        ))}
+        {items.map((it, i) => {
+          const key = `${it.fruit_id}:${it.packaging_size}`;
+          const needsSellingPrice = it.fruit_id && !stockKeys.has(key) && !items.slice(0, i).some(
+            (previous) => `${previous.fruit_id}:${previous.packaging_size}` === key
+          );
+          return (
+            <div key={i} className="item-row">
+              <label>
+                Fruit
+                <select value={it.fruit_id} onChange={(e) => updateItem(i, 'fruit_id', e.target.value)} required>
+                  <option value="">— Choose fruit —</option>
+                  {fruits.map((f) => (
+                    <option key={f.fruit_id} value={f.fruit_id}>{f.fruit_name}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Size
+                <select value={it.packaging_size} onChange={(e) => updateItem(i, 'packaging_size', e.target.value)}>
+                  {PACKAGING_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </label>
+              <label>
+                Quantity
+                <input type="number" min="1" value={it.quantity}
+                       onChange={(e) => updateItem(i, 'quantity', e.target.value)} required />
+              </label>
+              <label>
+                Unit cost
+                <input type="number" min="0.01" step="0.01" value={it.unit_cost}
+                       onChange={(e) => updateItem(i, 'unit_cost', e.target.value)} required />
+              </label>
+              {needsSellingPrice && (
+                <label>
+                  Initial selling price
+                  <input type="number" min="0.01" step="0.01" value={it.selling_price}
+                         onChange={(e) => updateItem(i, 'selling_price', e.target.value)} required />
+                </label>
+              )}
+              <button type="button" className="btn btn-sm btn-danger"
+                      onClick={() => removeItem(i)} disabled={items.length === 1}>
+                Remove
+              </button>
+            </div>
+          );
+        })}
 
         <button type="button" className="btn btn-outline" onClick={addItem}>+ Add item</button>
 

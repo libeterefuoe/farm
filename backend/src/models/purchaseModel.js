@@ -30,6 +30,27 @@ async function findAll() {
   return rows;
 }
 
+async function findUnstockedHistory() {
+  const [rows] = await pool.execute(
+    `SELECT f.fruit_id, f.fruit_name, pd.packaging_size,
+            SUM(pd.quantity) - COALESCE(sd.sold_quantity, 0) AS available_quantity
+     FROM purchase_details pd
+     JOIN fruits f ON f.fruit_id = pd.fruit_id
+     LEFT JOIN (
+       SELECT fruit_id, packaging_size, SUM(quantity) AS sold_quantity
+       FROM sales_details
+       GROUP BY fruit_id, packaging_size
+     ) sd ON sd.fruit_id = pd.fruit_id AND sd.packaging_size = pd.packaging_size
+     LEFT JOIN stock st
+       ON st.fruit_id = pd.fruit_id AND st.packaging_size = pd.packaging_size
+     WHERE st.stock_id IS NULL
+     GROUP BY f.fruit_id, f.fruit_name, pd.packaging_size, sd.sold_quantity
+     HAVING available_quantity > 0
+     ORDER BY f.fruit_name, FIELD(pd.packaging_size,'SMALL','MEDIUM','LARGE')`
+  );
+  return rows;
+}
+
 async function findById(id) {
   const [headerRows] = await pool.execute(
     `SELECT p.purchase_id, p.supplier_id, s.business_name,
@@ -55,4 +76,4 @@ async function findById(id) {
   return { ...header, items };
 }
 
-module.exports = { createHeader, createDetail, findAll, findById };
+module.exports = { createHeader, createDetail, findAll, findUnstockedHistory, findById };

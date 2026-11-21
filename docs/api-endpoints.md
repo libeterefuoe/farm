@@ -150,15 +150,17 @@ Allowed provinces: `Gauteng`, `Free State`, `KwaZulu-Natal`, `Western Cape`, `Ea
 | Method | Path | Description |
 |--------|------|-------------|
 | GET    | `/api/purchases` | List all purchases |
+| GET    | `/api/purchases/unstocked-history` | Purchase history whose stock row is missing |
 | GET    | `/api/purchases/:id` | One purchase with line items |
 | POST   | `/api/purchases` | Create a purchase (multi-item) |
+| POST   | `/api/purchases/reconcile-stock` | Restore stock from purchase history |
 
 **POST body**
 ```json
 {
   "supplier_id": 1,
   "items": [
-    { "fruit_id": 1, "packaging_size": "SMALL",  "quantity": 10, "unit_cost": 15.00 },
+    { "fruit_id": 1, "packaging_size": "SMALL",  "quantity": 10, "unit_cost": 15.00, "selling_price": 25.00 },
     { "fruit_id": 2, "packaging_size": "MEDIUM", "quantity": 15, "unit_cost": 30.00 },
     { "fruit_id": 3, "packaging_size": "LARGE",  "quantity": 20, "unit_cost": 50.00 }
   ]
@@ -168,7 +170,19 @@ Allowed provinces: `Gauteng`, `Free State`, `KwaZulu-Natal`, `Western Cape`, `Ea
 The server:
 1. Validates supplier + fruits.
 2. Computes `total = Σ(quantity × unit_cost)`.
-3. Inserts `purchases` + `purchase_details` and **increases** `stock.available_quantity` per `(fruit, size)` — all inside a single transaction.
+3. Inserts `purchases` + `purchase_details` and increases `stock.available_quantity` per `(fruit, size)` — all inside a single transaction.
+4. If a `(fruit, size)` stock row does not exist yet, `selling_price` is required and initializes it. Its opening quantity is reconciled from purchase history minus sales; existing stock prices are preserved.
+
+**Restore stock for purchases recorded before stock initialization was fixed**
+```json
+{
+  "fruit_id": 1,
+  "packaging_size": "SMALL",
+  "selling_price": 25.00
+}
+```
+
+The restore endpoint creates a missing stock row with the net quantity from purchase and sales history. It does not create another purchase record.
 
 **Response 201**
 ```json
