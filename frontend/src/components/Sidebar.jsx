@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Truck, Apple, Users, Boxes, ShoppingCart,
+  LayoutDashboard, Truck, Apple, Users, Boxes, ShoppingCart, Sprout,
   ClipboardList, PlusCircle, Receipt, BarChart3, LogOut, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -52,8 +52,8 @@ export default function Sidebar({ open, onClose }) {
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
-            <span className="sidebar-logo"></span>
-            <span>Batloung Farm</span>
+            <span className="sidebar-logo"><Sprout size={19} /></span>
+            <span className="sidebar-brand-name">Batloung Farm</span>
           </div>
           <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
             <X size={20} />
