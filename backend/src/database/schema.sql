@@ -134,6 +134,7 @@ CREATE TABLE sales (
   CONSTRAINT chk_sale_paid  CHECK (amount_paid >= 0)
 ) ENGINE=InnoDB;
 
+
 -- =====================================================
 -- 7. SALES_DETAILS
 -- =====================================================
