@@ -1,6 +1,12 @@
 // Pure calculation helpers — easy to explain in a demo video.
 // These NEVER touch the database; they only do arithmetic.
 
+const MAX_DECIMAL_10_2 = 99999999.99;
+
+function fitsDecimal10_2(value) {
+  return Number.isFinite(value) && value >= 0 && value <= MAX_DECIMAL_10_2;
+}
+
 /**
  * Line total for a purchase line: quantity * unit_cost.
  */
@@ -27,4 +33,4 @@ function orderTotal(items) {
   );
 }
 
-module.exports = { lineTotal, salesLineTotal, orderTotal };
+module.exports = { MAX_DECIMAL_10_2, fitsDecimal10_2, lineTotal, salesLineTotal, orderTotal };

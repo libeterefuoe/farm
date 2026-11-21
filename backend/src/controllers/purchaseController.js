@@ -4,7 +4,7 @@ const purchaseModel = require('../models/purchaseModel');
 const stockModel = require('../models/stockModel');
 const supplierModel = require('../models/supplierModel');
 const fruitModel = require('../models/fruitModel');
-const { salesLineTotal, orderTotal } = require('../utils/calculateTotals');
+const { MAX_DECIMAL_10_2, fitsDecimal10_2, orderTotal } = require('../utils/calculateTotals');
 const {
   badRequest, notFound, isPositiveInt, isPositiveNumber, isValidPackagingSize
 } = require('../middleware/validate');
@@ -90,6 +90,12 @@ async function create(req, res, next) {
       quantity: it.quantity,
       unit_price: it.unit_cost
     })));
+    if (!fitsDecimal10_2(total)) {
+      return badRequest(
+        res,
+        `Purchase total exceeds the supported maximum of M ${MAX_DECIMAL_10_2.toFixed(2)}.`
+      );
+    }
 
     const purchaseId = await runTransaction(async (conn) => {
       const purchaseDate = new Date().toISOString().slice(0, 10);
