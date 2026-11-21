@@ -13,6 +13,7 @@ import Stock from './pages/Stock';
 import Suppliers from './pages/Suppliers';
 import Vendors from './pages/Vendors';
 import Welcome from './pages/Welcome';
+import './styles.css';
 
 export default function App() {
   return (
