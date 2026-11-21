@@ -133,6 +133,6 @@ The server always reads price from `stock.selling_price` — never from the requ
 
 ## Money & units
 
-- All money columns are `DECIMAL(10,2)` — exact fixed point, no float rounding issues.
+- Sale and purchase totals and sale payments use `DECIMAL(14,2)` to store amounts through M 100 billion. Other money columns remain `DECIMAL(10,2)`.
 - All box quantities are `INT`.
 - `mysql2` is configured with `decimalNumbers: true` so `DECIMAL` values come to JavaScript as `Number`, not `String`.

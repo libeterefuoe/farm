@@ -26,6 +26,13 @@ the distribution tables:
 mysql -u root -p batloung_farm < src/database/auth_tables.sql
 ```
 
+For an existing database, widen sale and purchase totals to support amounts up
+to M 100 billion:
+
+```bash
+mysql -u root -p batloung_farm < src/database/expand_money_columns.sql
+```
+
 The `roles` table includes an `Administrator` role. To create the initial admin
 account, set `ADMIN_USERNAME` and a real bcrypt `ADMIN_PASSWORD_HASH` in `.env`,
 then run:

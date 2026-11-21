@@ -4,7 +4,7 @@ const stockModel = require('../models/stockModel');
 const vendorModel = require('../models/vendorModel');
 const fruitModel = require('../models/fruitModel');
 const { derivePaymentStatus } = require('../utils/paymentStatus');
-const { MAX_DECIMAL_10_2, fitsDecimal10_2, orderTotal } = require('../utils/calculateTotals');
+const { MAX_SUPPORTED_TOTAL, isSupportedTotal, orderTotal } = require('../utils/calculateTotals');
 const {
   badRequest, notFound,
   isPositiveInt, isNonNegativeNumber,
@@ -113,9 +113,9 @@ async function create(req, res, next) {
         unit_price: r.unit_price
       })));
 
-      if (!fitsDecimal10_2(total)) {
+      if (!isSupportedTotal(total)) {
         const err = new Error(
-          `Sale total exceeds the supported maximum of M ${MAX_DECIMAL_10_2.toFixed(2)}.`
+          `Sale total exceeds the supported maximum of M ${MAX_SUPPORTED_TOTAL.toFixed(2)}.`
         );
         err.status = 400;
         throw err;

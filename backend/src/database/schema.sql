@@ -87,7 +87,7 @@ CREATE TABLE purchases (
   purchase_id     INT AUTO_INCREMENT PRIMARY KEY,
   supplier_id     INT NOT NULL,
   purchase_date   DATE NOT NULL,
-  total_amount    DECIMAL(10,2) NOT NULL,
+  total_amount    DECIMAL(14,2) NOT NULL,
   created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_purchase_supplier
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id)
@@ -123,8 +123,8 @@ CREATE TABLE sales (
   vendor_id       INT NOT NULL,
   sale_date       DATE NOT NULL,
   payment_status  ENUM('PAID','PARTIALLY_PAID','UNPAID') NOT NULL DEFAULT 'UNPAID',
-  total_amount    DECIMAL(10,2) NOT NULL,
-  amount_paid     DECIMAL(10,2) NOT NULL DEFAULT 0,
+  total_amount    DECIMAL(14,2) NOT NULL,
+  amount_paid     DECIMAL(14,2) NOT NULL DEFAULT 0,
   payment_method  ENUM('CASH','MOBILE_MONEY','CREDIT') NOT NULL DEFAULT 'CASH',
   created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_sale_vendor
