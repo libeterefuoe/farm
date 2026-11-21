@@ -52,7 +52,6 @@ export default function Welcome() {
           <span className="brand-mark"><Leaf size={21} strokeWidth={2.2} /></span>
           <span className="brand-name">Batloung Farm</span>
         </Link>
-        <Link to="/login" className="btn btn-primary welcome-nav-login">Admin Login</Link>
       </header>
 
       <main>
@@ -153,11 +152,7 @@ export default function Welcome() {
       </main>
 
       <footer className="welcome-footer">
-        <Link to="/" className="welcome-footer-brand">
-          <span className="brand-mark"><Leaf size={17} /></span>
-          <span>Batloung Farm</span>
-        </Link>
-        <span>© {new Date().getFullYear()} Batloung Farm. All rights reserved.</span>
+        © {new Date().getFullYear()} Batloung Farm
       </footer>
     </div>
   );

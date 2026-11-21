@@ -457,9 +457,8 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green-80
   border-bottom: 1px solid #edf0ed;
 }
 .welcome-brand { display: inline-flex; align-items: center; gap: 10px; color: #26352a; text-decoration: none; }
-.welcome-brand .brand-mark, .welcome-footer-brand .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+.welcome-brand .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
 .brand-name { font-size: 16px; font-weight: 760; letter-spacing: -0.04em; }
-.welcome-nav-login { min-height: 39px; padding-inline: 17px; }
 .welcome-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(400px, 0.95fr);
@@ -601,16 +600,14 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green-80
 .welcome-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
   width: min(100% - 64px, 1180px);
   min-height: 83px;
   margin: 0 auto;
   color: #89928a;
   font-size: 10px;
+  text-align: center;
 }
-.welcome-footer-brand { display: inline-flex; align-items: center; gap: 8px; color: #536154; font-size: 11px; font-weight: 700; text-decoration: none; }
-.welcome-footer-brand .brand-mark { width: 29px; height: 29px; border-radius: 9px; }
 
 /* Login page */
 .login-page { display: grid; min-height: 100vh; place-items: center; padding: 40px 24px; background: #f4f7f3; }
@@ -743,7 +740,6 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green-80
   .data-table { min-width: 620px; }
   .data-table thead th, .data-table tbody td { padding-inline: 12px; }
   .welcome-nav, .welcome-hero, .section-wrap, .welcome-footer { width: calc(100% - 36px); }
-  .welcome-nav-login { min-height: 36px; padding-inline: 12px; font-size: 11px; }
   .brand-name { font-size: 14px; }
   .welcome-hero { padding-top: 47px; }
   .welcome-hero h1 { margin-top: 16px; font-size: clamp(35px, 10vw, 46px); }
@@ -757,7 +753,7 @@ input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green-80
   .welcome-feature-card { min-height: 0; }
   .welcome-step { padding-inline: 4px; }
   .welcome-step h3 { font-size: 11px; }
-  .welcome-footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: 7px; padding: 14px 0; }
+  .welcome-footer { min-height: 68px; padding: 14px 0; }
   .login-page { padding: 0; background: #fff; }
   .login-card { min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; }
   .login-brand-panel { padding: 23px 22px 19px; }
