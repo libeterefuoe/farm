@@ -1,6 +1,6 @@
 // Usage:
-//   node scripts/hashPassword.js 123456
-// Copy the printed hash into ADMIN_PASSWORD_HASH in .env
+//   npm run hash -- <password>
+// Copy the printed hash into ADMIN_PASSWORD_HASH in .env.
 const bcrypt = require('bcryptjs');
 
 const plain = process.argv[2];
@@ -11,6 +11,5 @@ if (!plain) {
 }
 
 const hash = bcrypt.hashSync(plain, 10);
-console.log('\nPassword :', plain);
-console.log('Bcrypt   :', hash);
-console.log('\nPaste the Bcrypt value into ADMIN_PASSWORD_HASH in backend/.env\n');
+console.log('\nBcrypt hash:', hash);
+console.log('\nPaste the hash into ADMIN_PASSWORD_HASH in backend/.env\n');

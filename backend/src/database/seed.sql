@@ -5,6 +5,12 @@
 USE batloung_farm;
 
 -- =====================================================
+-- ADMIN ROLE
+-- =====================================================
+INSERT IGNORE INTO roles (role_name, description)
+VALUES ('Administrator', 'Full access to the Batloung Farm management system');
+
+-- =====================================================
 -- SUPPLIERS — one per South African province (8)
 -- =====================================================
 INSERT INTO suppliers (business_name, contact_person, phone, province, address) VALUES

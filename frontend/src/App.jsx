@@ -17,22 +17,27 @@ import './styles.css';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="/login" element={<Login />} />
-      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/suppliers" element={<Suppliers />} />
-        <Route path="/fruits" element={<Fruits />} />
-        <Route path="/stock" element={<Stock />} />
-        <Route path="/vendors" element={<Vendors />} />
-        <Route path="/purchases/new" element={<NewPurchase />} />
-        <Route path="/sales/new" element={<NewSale />} />
-        <Route path="/sales" element={<SalesList />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <div className="app-root">
+      <div className="app-route-content">
+        <Routes>
+          <Route path="/" element={<Welcome />} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/suppliers" element={<Suppliers />} />
+            <Route path="/fruits" element={<Fruits />} />
+            <Route path="/stock" element={<Stock />} />
+            <Route path="/vendors" element={<Vendors />} />
+            <Route path="/purchases/new" element={<NewPurchase />} />
+            <Route path="/sales/new" element={<NewSale />} />
+            <Route path="/sales" element={<SalesList />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+      <footer className="app-footer">© {new Date().getFullYear()} Batloung Farm</footer>
+    </div>
   );
 }

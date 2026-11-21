@@ -151,9 +151,6 @@ export default function Welcome() {
         </section>
       </main>
 
-      <footer className="welcome-footer">
-        © {new Date().getFullYear()} Batloung Farm
-      </footer>
     </div>
   );
 }

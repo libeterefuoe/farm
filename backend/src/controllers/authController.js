@@ -1,7 +1,7 @@
 // Admin authentication: login + me
-// Single admin account stored entirely in .env — no users table.
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const db = require('../config/db');
 const rateLimit = require('../middleware/loginRateLimit');
 
 // POST /api/auth/login
@@ -17,15 +17,18 @@ async function login(req, res) {
     });
   }
 
-  // Trim + case-insensitive username compare
-  const submittedName = username.trim().toLowerCase();
-  const expectedName = String(process.env.ADMIN_USERNAME || '').trim().toLowerCase();
-  const expectedHash = String(process.env.ADMIN_PASSWORD_HASH || '');
+  const [users] = await db.execute(
+    `SELECT u.user_id, u.username, u.password_hash, u.is_active, r.role_name
+     FROM users u
+     JOIN roles r ON r.role_id = u.role_id
+     WHERE LOWER(u.username) = LOWER(?)
+     LIMIT 1`,
+    [username.trim()]
+  );
+  const user = users[0];
+  const passMatches = user && user.is_active && await bcrypt.compare(password, user.password_hash);
 
-  const nameMatches = submittedName === expectedName;
-  const passMatches = expectedHash && await bcrypt.compare(password, expectedHash);
-
-  if (!nameMatches || !passMatches) {
+  if (!passMatches) {
     rateLimit.recordFailure(req);
     return res.status(401).json({
       success: false,
@@ -36,14 +39,14 @@ async function login(req, res) {
   rateLimit.clear(req);
 
   const token = jwt.sign(
-    { username: process.env.ADMIN_USERNAME },
+    { sub: String(user.user_id), username: user.username, role: user.role_name },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
   );
 
   return res.json({
     success: true,
-    data: { token, username: process.env.ADMIN_USERNAME }
+    data: { token, username: user.username }
   });
 }
 

@@ -19,6 +19,25 @@ mysql -u root -p < src/database/schema.sql
 mysql -u root -p batloung_farm < src/database/seed.sql
 ```
 
+For an existing database, add the authentication tables without recreating
+the distribution tables:
+
+```bash
+mysql -u root -p batloung_farm < src/database/auth_tables.sql
+```
+
+The `roles` table includes an `Administrator` role. To create the initial admin
+account, set `ADMIN_USERNAME` and a real bcrypt `ADMIN_PASSWORD_HASH` in `.env`,
+then run:
+
+```bash
+npm run provision-admin
+```
+
+Generate a password hash with `npm run hash -- <your-password>`. The
+bootstrap environment variables are only used by this one-time command; login
+checks the account stored in `users`.
+
 ## 3. Run
 
 ```bash
@@ -189,3 +208,5 @@ ORDER BY outstanding_balance DESC;
 | `DB_NAME`     | `batloung_farm` |
 | `PORT`        | API port (default 5000) |
 | `FRONTEND_URL`| Origin allowed by CORS |
+| `ADMIN_USERNAME` | Username for the one-time admin provisioning command |
+| `ADMIN_PASSWORD_HASH` | Bcrypt hash for the one-time admin provisioning command |
