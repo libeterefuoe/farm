@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Boxes, Check, Eye, EyeOff, Leaf, PackageCheck, Truck
@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Alert from '../components/Alert';
 
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/dashboard';
@@ -17,10 +17,6 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) navigate(from, { replace: true });
-  }, [isAuthenticated, from, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
